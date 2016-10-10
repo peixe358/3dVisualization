@@ -7,6 +7,8 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
+#include <cblas.h>
 
 
 /* Error messages */
@@ -28,6 +30,10 @@ typedef unsigned short ushort;
 typedef struct timeval timer;
 typedef unsigned char uchar;
 
+typedef struct _point{
+	float x, y, z;
+} Vector, Point;
+
 /* Common definitions */
 
 
@@ -44,7 +50,13 @@ typedef unsigned char uchar;
 #define NIL        -1
 #define INCREASING  1
 #define DECREASING  0
-#define Epsilon     1E-05       
+#define Epsilon     1E-05
+#define Y           0
+#define CG          1
+#define CO          2
+#define AXIS_X  0
+#define AXIS_Y  1
+#define AXIS_Z  2
 
 /* Common operations */
 

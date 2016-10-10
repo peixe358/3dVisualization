@@ -1,5 +1,34 @@
 #include "image.h"
 
+
+void *ReadImageByExt(char *filename)
+{
+  char *ext = NULL;
+
+  ext = strchr(filename, '.');
+
+  if (strcmp(ext, ".ppm")) {
+     ColorImage *I = NULL;
+     I = ReadColorImage(filename);
+     return I;
+  }
+  if (strcmp(ext, ".pgm")) {
+     GrayImage *I = NULL;
+     I = ReadGrayImage(filename);
+     return I;
+  }
+  if (strcmp(ext, ".scn")) {
+     MedicalImage *I = NULL;
+     I = ReadMedicalImage(filename);
+     return I;
+  }
+
+  Error("Invalid Image Format. Try: ppm, pgm or scn", "ReadImageByExte");
+
+  return NULL;
+
+}
+
 Image *CreateImage(int ncols, int nrows)
 {
   Image *img=NULL;
@@ -89,7 +118,7 @@ Image *ReadImage(char *filename)
   return(img);
 }
 
-void WriteImage(Image *img,char *filename)
+void WriteImage(Image *img, const char *filename)
 {
   FILE *fp;
   int i, n, Imax,Imin;
@@ -237,6 +266,31 @@ void DestroyDImage(DImage **dimg)
   }
 }
 
+int MinimumValue(GrayImage *img){
+  int i,j,min;
+
+  min = INT_MAX;
+  for (i = 0; i < img->nx; i++)
+    for (j=0; j < img->ny; j++)
+      if (img->val[j][i] < min)
+        min = img->val[j][i];
+
+  return min;
+}
+
+int MaximumValue(GrayImage *img){
+  int i,j,max;
+
+  max = -1;
+  for (i = 0; i < img->nx; i++)
+    for (j=0; j < img->ny; j++)
+      if (img->val[j][i] > max)
+        max = img->val[j][i];
+
+  return max;
+}
+
+
 GrayImage *CreateGrayImage(int nx, int ny)
 {
   GrayImage *I=(GrayImage *)calloc(1,sizeof(GrayImage));
@@ -288,27 +342,27 @@ GrayImage *ReadGrayImage(char *filename)
     fscanf(fp,"%s",type);
     NCFgets(remarks,255,fp);
 
-    if ((strcmp(type,"P2")==0)||
-	(strcmp(type,"P5")==0)){
+    if ((strcmp(type,"P2")==0) || (strcmp(type,"P5")==0)){
       fscanf(fp,"%d",&nx);
       fscanf(fp,"%d\n",&ny);
 
       I = CreateGrayImage(nx,ny);
       fscanf(fp,"%d\n",&Imax);
+      I->Imax = Imax;
       
       if (strcmp(type,"P2")==0){
-	for (y=0; y < ny; y++)
-	  for (x=0; x < nx; x++)
-	    fscanf(fp,"%d",&I->val[y][x]);
+	       for (y=0; y < ny; y++)
+	         for (x=0; x < nx; x++)
+	           fscanf(fp,"%d",&I->val[y][x]);
       }else{
-	if (strcmp(type,"P5")==0){
-	  data = AllocUCharArray(nx*ny);
-	  fread(data,sizeof(uchar),nx*ny,fp);
-	  for (y=0; y < ny; y++)
-	    for (x=0; x < nx; x++)
-	      I->val[y][x] = data[x+y*nx];
-	  free(data);
-	}
+	       if (strcmp(type,"P5")==0){
+	         data = AllocUCharArray(nx*ny);
+	         fread(data,sizeof(uchar),nx*ny,fp);
+	         for (y=0; y < ny; y++)
+	           for (x=0; x < nx; x++)
+	             I->val[y][x] = data[x+y*nx];
+	         free(data);
+	       }
       }
     }else{
       Error("Image type invalid","ReadGrayImage");
@@ -321,7 +375,7 @@ GrayImage *ReadGrayImage(char *filename)
   return(I);
 }
 
-void WriteGrayImage(GrayImage *I, char *filename)
+void WriteGrayImage(GrayImage *I, const char *filename)
 {
   FILE *fp=NULL;
   uchar *data=NULL;
@@ -342,7 +396,7 @@ void WriteGrayImage(GrayImage *I, char *filename)
     if (((Imax-Imin) >= 0)&&((Imax-Imin) < 256)){ 
       fprintf(fp,"P5\n");
       fprintf(fp,"%d %d\n",I->nx,I->ny);
-      fprintf(fp,"%d\n",Imax);
+      fprintf(fp,"%d\n",I->Imax);
 
       data = AllocUCharArray(I->nx*I->ny);
       for (y=0; y < I->ny; y++)
@@ -354,13 +408,13 @@ void WriteGrayImage(GrayImage *I, char *filename)
     }else{
       fprintf(fp,"P2\n");
       fprintf(fp,"%d %d\n",I->nx,I->ny);
-      fprintf(fp,"%d\n",Imax-Imin);
+      fprintf(fp,"%d\n",Imax-Imin);//Imax-Imin
 
       for (y=0; y < I->ny; y++){
-	for (x=0; x < I->nx; x++)
-	  fprintf(fp,"%d ",I->val[y][x]-Imin);
-	if (y%17==0)
-	  fprintf(fp,"\n");
+	      for (x=0; x < I->nx; x++)
+	        fprintf(fp,"%d ",I->val[y][x]-Imin);//-Imin
+	        if (y%17==0)
+	          fprintf(fp,"\n");
       }
     }
     fclose(fp);
@@ -368,6 +422,84 @@ void WriteGrayImage(GrayImage *I, char *filename)
   }else{
     Error(MSG2,"WriteGrayImage");
   }
+}
+
+ColorImage *RGB2YCgCo(ColorImage *img){
+
+  ColorImage *imgOut = CreateColorImage(img->nx, img->ny);
+  int i,j,r,g,b,halfH;
+
+  halfH = img->Imax/2;
+  imgOut->Imax = img->Imax;
+  for (i=0; i<img->nx; i++)
+    for (j=0; j<img->ny; j++) {
+      r = img->cor[j][i].val[RED];
+      g = img->cor[j][i].val[GREEN];
+      b = img->cor[j][i].val[BLUE];
+      imgOut->cor[j][i].val[Y] = r/4 + g/2 + b/4 + 1/2;//Y
+      imgOut->cor[j][i].val[CG] = -r/4 + g/2 - b/4 + halfH + 1/2;//Cg
+      imgOut->cor[j][i].val[CO] = r/2 - b/2 + halfH + 1/2;//Co
+    }
+
+  return imgOut;
+
+}
+
+
+ColorImage *YCgCo2RGB(ColorImage *img){
+
+  ColorImage *imgOut = CreateColorImage(img->nx, img->ny);
+  int i,j,y,cg,co,r,g,b,H;
+
+  H = img->Imax;
+  imgOut->Imax = img->Imax;
+  for (i=0; i<img->nx; i++)
+    for (j=0; j<img->ny; j++) {
+      y = img->cor[j][i].val[Y];
+      cg = img->cor[j][i].val[CG];
+      co = img->cor[j][i].val[CO];
+
+      r = y - cg + co;
+      g = y + cg - H/2;
+      b = y - cg - co + H;
+
+      r = (r<0)?0:r;
+      g = (g<0)?0:g;
+      b = (b<0)?0:b;
+
+      imgOut->cor[j][i].val[RED] = r>H?H:r;//R
+      imgOut->cor[j][i].val[GREEN] = g>H?H:g;//G
+      imgOut->cor[j][i].val[BLUE] = b>H?H:b;//B
+
+
+    }
+
+  return imgOut;
+
+}
+
+int MinimumIntensityColor(ColorImage *img, int c){
+  int i,j,min;
+
+  min = img->Imax;
+  for (i = 0; i<img->nx; i++)
+    for (j=0; j<img->ny; j++)
+      if (img->cor[j][i].val[c] < min)
+        min = img->cor[j][i].val[c];
+
+  return min;
+}
+
+int MaximumIntensityColor(ColorImage *img, int c){
+  int i,j,max;
+
+  max = -1;
+  for (i = 0; i<img->nx; i++)
+    for (j=0; j<img->ny; j++)
+      if (img->cor[j][i].val[c] > max)
+        max = img->cor[j][i].val[c];
+
+  return max;
 }
 
 ColorImage *CreateColorImage(int nx, int ny)
@@ -401,6 +533,7 @@ ColorImage *ReadColorImage(char *filename)
   int  x,y,nx,ny,Imax; 
   ColorImage *I=NULL;
   char remarks[256];
+  ushort rgb16[3];
 
   fp = fopen(filename,"r");
   if (fp != NULL) {
@@ -412,13 +545,33 @@ ColorImage *ReadColorImage(char *filename)
       fscanf(fp,"%d\n",&ny);
       I = CreateColorImage(nx,ny);
       fscanf(fp,"%d\n",&Imax);
-      fgetc(fp);
-      for (y=0; y < ny; y++)
-	for (x=0; x < nx; x++){
-	  I->cor[y][x].val[RED]=(int)fgetc(fp);
-	  I->cor[y][x].val[GREEN]=(int)fgetc(fp);
-	  I->cor[y][x].val[BLUE]=(int)fgetc(fp);
-	}
+      I->Imax = Imax;
+
+      if (Imax <= 255){
+        for (y=0; y < ny; y++)
+	         for (x=0; x < nx; x++){
+	           I->cor[y][x].val[RED]=(int)fgetc(fp);//red
+	           I->cor[y][x].val[GREEN]=(int)fgetc(fp);//green
+	           I->cor[y][x].val[BLUE]=(int)fgetc(fp);//blue
+	         }
+      }else if (Imax > 255 && Imax <= 65535){
+        int rgbBitDepth = 9;
+
+        while ((1 << rgbBitDepth) <= Imax) {
+          rgbBitDepth++;
+        }
+        for (y=0; y < ny; y++) {
+          for (x=0; x < nx; x++){
+            if (fread(rgb16, 2, 3, fp) == 3) {
+              I->cor[y][x].val[RED]=((rgb16[0] & 0xff) << 8) | ((ushort) rgb16[0] >> 8);
+              I->cor[y][x].val[GREEN]=((rgb16[1] & 0xff) << 8) | ((ushort) rgb16[1] >> 8);
+              I->cor[y][x].val[BLUE]=((rgb16[2] & 0xff) << 8) | ((ushort) rgb16[2] >> 8);
+            } else{
+              Error("Reading 16-bit error","ReadColorImage");
+            }
+          }
+        }
+      }
     }else{
       Error("Image type invalid","ReadColormage");
     }
@@ -431,24 +584,64 @@ ColorImage *ReadColorImage(char *filename)
   return(I);
 }
 
-void WriteColorImage(ColorImage *I, char *filename)
+void WriteColorImage(ColorImage *I, const char *filename)
 {
   FILE *fp=NULL;
   int  x,y; 
+  ushort rgb16[3];
 
   fp = fopen(filename,"w");
   if (fp != NULL) {
     fprintf(fp,"P6\n");
-    fprintf(fp,"%d %d\n",I->nx,I->ny);    
-    fprintf(fp,"255\n");
+    fprintf(fp,"%d %d\n",I->nx,I->ny);
 
-    for (y=0; y < I->ny; y++)
-      for (x=0; x < I->nx; x++){
-	fputc((uchar)I->cor[y][x].val[RED],fp);
-	fputc((uchar)I->cor[y][x].val[GREEN],fp);
-	fputc((uchar)I->cor[y][x].val[BLUE],fp);
+    int img_min_val[3];
+    int img_max_val[3], max_val;
+    for (int i=0; i<3; i++){
+       img_max_val[i] = MaximumIntensityColor(I,i);
+       img_min_val[i] = MinimumIntensityColor(I,i);
+    }
+
+    max_val = MAX(MAX(img_max_val[RED],img_max_val[GREEN]),img_max_val[BLUE]);
+
+    if ((img_min_val[RED] < 0) || (img_min_val[GREEN] < 0) ||(img_min_val[BLUE] < 0)){
+      Error(MSG2,"WriteColorImage");
+      return;
+    }
+
+    if (max_val < 256){
+      fprintf(fp,"255\n");
+      for (y=0; y < I->ny; y++)
+        for (x=0; x < I->nx; x++){
+          fputc((uchar)I->cor[y][x].val[RED],fp);//red
+          fputc((uchar)I->cor[y][x].val[GREEN],fp);//green
+          fputc((uchar)I->cor[y][x].val[BLUE],fp);//blue
+        }
+      fclose(fp);
+    } else if (max_val < 65536){
+      int rgbBitDepth = 9;
+      // find the bit depth for the maximum value img_max_val
+      while ((1 << rgbBitDepth) <= max_val) {
+          rgbBitDepth++;
       }
-    fclose(fp);
+
+      fprintf(fp, "%d\n", (1 << rgbBitDepth) - 1);
+      for (y=0; y < I->ny; y++)
+        for (x=0; x < I->nx; x++){
+          rgb16[RED] = ((I->cor[y][x].val[RED] & 0xff) << 8) | ((ushort) I->cor[y][x].val[RED] >> 8);//I->cor[y][x].val[RED];
+          rgb16[GREEN] = ((I->cor[y][x].val[GREEN] & 0xff) << 8) | ((ushort) I->cor[y][x].val[GREEN] >> 8);//I->cor[y][x].val[GREEN];
+          rgb16[BLUE] = ((I->cor[y][x].val[BLUE] & 0xff) << 8) | ((ushort) I->cor[y][x].val[BLUE] >> 8);//I->cor[y][x].val[BLUE];
+          // write 6 bytes for each image pixel
+          if (fwrite(rgb16, 2, 3, fp) != 3) {
+              Error("Cannot write 16-bit image as P6", "iftWriteImageP6");
+          }
+        }
+      fclose(fp);
+    }
+
+
+
+
   }else{
     Error(MSG2,"WriteColorImage");
   }
@@ -552,6 +745,7 @@ MedicalImage *ReadMedicalImage(char *filename)
 	  for (y=0; y < ny; y++)
 	    for (x=0; x < nx; x++)
 	      I->val[z][y][x] = (int) data8[x+y*nx+z*nx*ny];
+  I->Imax = 255;
 	free(data8);
 	break;
 
@@ -564,9 +758,10 @@ MedicalImage *ReadMedicalImage(char *filename)
 	  for (y=0; y < ny; y++)
 	    for (x=0; x < nx; x++){
 	      if (data16[x+y*nx+z*nx*ny] > Imax) 
-		Imax = data16[x+y*nx+z*nx*ny];
+		      Imax = data16[x+y*nx+z*nx*ny];
 	      I->val[z][y][x] = (int) data16[x+y*nx+z*nx*ny];
 	    }
+  I->Imax = Imax;
 	free(data16);
 	break;
 	
@@ -584,7 +779,7 @@ MedicalImage *ReadMedicalImage(char *filename)
   return(I);
 }
 
-void WriteMedicalImage(MedicalImage *I, char *filename)
+void WriteMedicalImage(MedicalImage *I, const char *filename)
 {
   FILE *fp=NULL;
   uchar *data8=NULL;
