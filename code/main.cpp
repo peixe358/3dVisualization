@@ -9,6 +9,8 @@ extern "C" {
 
 #include "cut.h"
 #include "radiometric_trans.h"
+#include "geometric_trans.h"
+
 
 using namespace std;
 
@@ -22,12 +24,14 @@ using namespace std;
 
 int main(int argc, char **argv) {
    
-   test();
+   //test(); test() funtion in cut.cpp
 
    if (argc != 5) {
-      cout << "<input image> " << endl ;
-      cout << "<output directory> " << endl ;
-      cout << "<number of slice> " << endl ;
+      cout << "<Error - Check the Arguments> " << endl ;      
+      cout << "<Input Image> " << endl ;
+      cout << "<Output Directory> " << endl ;
+      cout << "<Number of Slice> " << endl ;
+      cout << "<Value to H,  pass 0 by default> " << endl ;
       exit (-1);
    }
    
@@ -214,6 +218,42 @@ int main(int argc, char **argv) {
    ColorImage * concatenateImage_sagital = ConcatenateLabelImage(sagital, sagital_label_color, 0);
    WriteColorImage(concatenateImage_sagital, (output_dir + string("sagital_label_and_mask") + extension).c_str());
 
+
+
+
+
+   // Extract planar slice from a medical image
+   Point p1, p2;
+
+   p1.x = image->nx / 2;
+   p1.y = image->ny / 2;
+   p1.z = 100;
+
+   p2.x = p1.x + 1;
+   p2.y = p1.y + 1;
+   p2.z = p1.z + 1;
+
+   GrayImage * planarImage = getPlanarImage(p1, p2, image);
+   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_1_1_1") + extension).c_str());
+   DestroyGrayImage(&planarImage);
+
+
+   p2.x = p1.x;
+   p2.y = p1.y + 1;
+   p2.z = p1.z + 1;
+
+   planarImage = getPlanarImage(p1, p2, image);
+   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_0_1_1") + extension).c_str());
+   DestroyGrayImage(&planarImage);
+
+
+   p2.x = p1.x - 1;
+   p2.y = p1.y + 1;
+   p2.z = p1.z + 1;
+
+   planarImage = getPlanarImage(p1, p2, image);
+   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_n1_1_1") + extension).c_str());
+   DestroyGrayImage(&planarImage);
 
 
 

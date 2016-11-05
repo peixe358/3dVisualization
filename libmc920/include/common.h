@@ -8,7 +8,6 @@
 #include <string.h>
 #include <limits.h>
 #include <time.h>
-#include <cblas.h>
 
 
 /* Error messages */
@@ -34,6 +33,10 @@ typedef struct _point{
 	float x, y, z;
 } Vector, Point;
 
+typedef struct _voxel {
+    int x, y, z;
+} Voxel;
+
 /* Common definitions */
 
 
@@ -50,13 +53,13 @@ typedef struct _point{
 #define NIL        -1
 #define INCREASING  1
 #define DECREASING  0
-#define Epsilon     1E-05
+#define Epsilon     1E-05  
 #define Y           0
 #define CG          1
-#define CO          2
+#define CO          2 
 #define AXIS_X  0
 #define AXIS_Y  1
-#define AXIS_Z  2
+#define AXIS_Z  2    
 
 /* Common operations */
 
@@ -68,10 +71,15 @@ typedef struct _point{
 #define MIN(x,y) (((x) < (y))?(x):(y))
 #endif
 
+#ifndef ValidVoxel
+#define ValidVoxel(img, v)  ((v.x >= 0) && (v.x < img->nx) && (v.y >= 0) && (v.y < img->ny) && (v.z >= 0) && (v.z < img->nz))
+#endif
+
 #define ROUND(x) ((x < 0)?(int)(x-0.5):(int)(x+0.5))
 
 #define SIGN(x) ((x >= 0)?1:-1)
 
+int     AlmostZero(double x); /* Check if variable is almost zero*/
 char   *AllocCharArray(int n);  /* It allocates 1D array of n characters */
 uchar  *AllocUCharArray(int n);  /* It allocates 1D array of n characters */
 ushort *AllocUShortArray(int n);  /* It allocates 1D array of n characters */

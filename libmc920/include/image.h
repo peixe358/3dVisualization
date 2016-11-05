@@ -84,6 +84,7 @@ void          WriteColorImage(ColorImage *I, const char *filename);
 MedicalImage *CreateMedicalImage(int nx, int ny, int nz); 
 void          DestroyMedicalImage(MedicalImage **I);
 MedicalImage *ReadMedicalImage(char *filename);
+MedicalImage *CopyMedicalImage(MedicalImage *img);
 void          WriteMedicalImage(MedicalImage *I, const char *filename); 
 
 #endif

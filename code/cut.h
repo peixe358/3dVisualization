@@ -5,7 +5,6 @@ struct Vector3d {
    int x;
    int y;
    int z;
-
 };
 
 enum Type {AXIAL, CORONAL, SAGITAL};

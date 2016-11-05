@@ -9,5 +9,8 @@
 #include "linear.h"
 #include "spectrum.h"
 #include "gqueue.h"
+#include "matriz.h"
+#include "interpolation.h"
+#include "plane.h"
 
 #endif

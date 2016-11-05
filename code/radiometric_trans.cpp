@@ -4,7 +4,7 @@ extern "C" {
 
 #include <iostream>
 #include <set>
-
+#include <cmath>
 
 #include "radiometric_trans.h"
 
@@ -141,9 +141,9 @@ ColorImage* Gray2Color(GrayImage *gray, int H) {
          //V /= 100;
          V = double(6.0-2.0) * V + 1.0;
 
-         output->cor[y][x].val[RED]=    H * max(0, int((3.0 - abs(V-4.0) - abs(V-5.0))/2.0));// (int) V * H;//red
-         output->cor[y][x].val[GREEN]=  H * max(0, int((4.0 - abs(V-2.0) - abs(V-4.0))/2.0)); //0;//(int)V * H;//green
-         output->cor[y][x].val[BLUE]=   H * max(0, int((3.0 - abs(V-1.0) - abs(V-2.0))/2.0)); // 0;//(int)V * H;//blue
+         output->cor[y][x].val[RED]=    H * max(0, int((3.0 - std::abs(V-4.0) - std::abs(V-5.0))/2.0));// (int) V * H;//red
+         output->cor[y][x].val[GREEN]=  H * max(0, int((4.0 - std::abs(V-2.0) - std::abs(V-4.0))/2.0)); //0;//(int)V * H;//green
+         output->cor[y][x].val[BLUE]=   H * max(0, int((3.0 - std::abs(V-1.0) - std::abs(V-2.0))/2.0)); // 0;//(int)V * H;//blue
       }  
    }
    return output;
@@ -169,9 +169,9 @@ ColorImage* Gray2ColorLabelImage(GrayImage *gray, int H) {
             //V /= 100;
             V = double(6.0-2.0) * V + 1.0;
 
-            output->cor[y][x].val[RED]=    H * max(0, int((3.0 - abs(V-4.0) - abs(V-5.0))/2.0));// (int) V * H;//red
-            output->cor[y][x].val[GREEN]=  H * max(0, int((4.0 - abs(V-2.0) - abs(V-4.0))/2.0)); //0;//(int)V * H;//green
-            output->cor[y][x].val[BLUE]=   H * max(0, int((3.0 - abs(V-1.0) - abs(V-2.0))/2.0)); // 0;//(int)V * H;//blue
+            output->cor[y][x].val[RED]=    H * max(0, int((3.0 - std::abs(V-4.0) - std::abs(V-5.0))/2.0));// (int) V * H;//red
+            output->cor[y][x].val[GREEN]=  H * max(0, int((4.0 - std::abs(V-2.0) - std::abs(V-4.0))/2.0)); //0;//(int)V * H;//green
+            output->cor[y][x].val[BLUE]=   H * max(0, int((3.0 - std::abs(V-1.0) - std::abs(V-2.0))/2.0)); // 0;//(int)V * H;//blue
          }     
       }  
    }

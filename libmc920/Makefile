@@ -2,6 +2,7 @@ LIB=./lib
 INCLUDE=./include
 SRC=./src
 OBJ=./obj
+BIN=./bin
 
 #FLAGS= -g  -O0 -Wall -D _DEBUG -Wno-unused-result -fPIC -std=gnu99 -pedantic
 FLAGS=  -O3 -Wall -Wno-unused-result -fPIC -std=gnu99 -pedantic
@@ -18,6 +19,9 @@ $(OBJ)/kernel.o \
 $(OBJ)/linear.o \
 $(OBJ)/gqueue.o \
 $(OBJ)/spectrum.o \
+$(OBJ)/matriz.o \
+$(OBJ)/plane.o \
+$(OBJ)/interpolation.o \
 
 	ar csr $(LIB)/libmc920.a \
 $(OBJ)/common.o \
@@ -28,6 +32,9 @@ $(OBJ)/kernel.o \
 $(OBJ)/linear.o \
 $(OBJ)/gqueue.o \
 $(OBJ)/spectrum.o \
+$(OBJ)/matriz.o \
+$(OBJ)/plane.o \
+$(OBJ)/interpolation.o \
 
 $(OBJ)/common.o: $(SRC)/common.c
 	gcc $(FLAGS) -c $(SRC)/common.c -I$(INCLUDE) \
@@ -59,10 +66,22 @@ $(OBJ)/gqueue.o: $(SRC)/gqueue.c
 
 $(OBJ)/spectrum.o: $(SRC)/spectrum.c
 	gcc $(FLAGS) -c $(SRC)/spectrum.c -I$(INCLUDE) \
-	-o $(OBJ)/spectrum.o 
+	-o $(OBJ)/spectrum.o
+
+$(OBJ)/matriz.o: $(SRC)/matriz.c
+	gcc $(FLAGS) -c $(SRC)/matriz.c -I$(INCLUDE) \
+	-o $(OBJ)/matriz.o 
+
+$(OBJ)/plane.o: $(SRC)/plane.c
+	gcc $(FLAGS) -c $(SRC)/plane.c -I$(INCLUDE) \
+	-o $(OBJ)/plane.o  
+
+$(OBJ)/interpolation.o: $(SRC)/interpolation.c
+	gcc $(FLAGS) -c $(SRC)/interpolation.c -I$(INCLUDE) \
+	-o $(OBJ)/interpolation.o 
 
 clean: 
-	rm $(LIB)/lib*.a; rm $(OBJ)/*.o; 	
+	rm $(LIB)/lib*.a; rm $(OBJ)/*.o; rm $(BIN)/*; 	
 
 
 
