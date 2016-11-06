@@ -257,6 +257,25 @@ int main(int argc, char **argv) {
 
 
 
+   // reformat image
+   p1.x = image->nx / 2;
+   p1.y = image->ny / 2;
+   p1.z = 100;
+
+   p2.x = p1.x + 200;
+   p2.y = p1.y + 200;
+   p2.z = p1.z + 200;
+
+   MedicalImage* roi = reformatImage(p1, p2, image);
+   WriteMedicalImage(roi, (output_dir + string("Medical_ROI_Image") + ".scn").c_str());
+   DestroyMedicalImage(&roi);
+
+   /********** Create Slice Images ************************/
+   roi = ReadMedicalImage("/home/peixe/output_trabalho/current/Medical_ROI_Image.scn");   
+
+   MedicalImage2GrayImages(roi, output_dir.c_str());
+
+
 
 /********** Destroy images ************************/
    DestroyGrayImage(&axial);

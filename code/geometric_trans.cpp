@@ -269,9 +269,9 @@ GrayImage* getPlanarImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, i
 				//cout << " (x',y',z') = " << p_dst.x << ", " << p_dst.y << ", " << p_dst.z << endl;
 
 				int new_value = 0;
-				if (p_dst.x >= 0 && p_dst.x <= image->nx &&
-				    p_dst.y >= 0 && p_dst.y <= image->ny &&
-				    p_dst.z >= 0 && p_dst.z <= image->nz) {
+				if (p_dst.x >= 0 && p_dst.x < image->nx &&
+				    p_dst.y >= 0 && p_dst.y < image->ny &&
+				    p_dst.z >= 0 && p_dst.z < image->nz) {
 
 					new_value = ImageValueAtPoint(image, p_dst);
 				}
@@ -283,17 +283,74 @@ GrayImage* getPlanarImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, i
 	}
 
 
-MedicalImage* reformatImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, int dy2=-1) {
-	return NULL;
+void fillSliceWithGrayImage(MedicalImage *image, GrayImage * gray_image, int slice){
+
+  for (int y = 0; y < image->ny; ++y)
+	     for (int x = 0; x < image->nx; ++x)
+	        image->val[slice][y][x]  = gray_image->val[y][x];
+}
+
+MedicalImage* reformatImage(Point p1, Point p2, MedicalImage *image, int nx2=-1, int ny2=-1) {
+	Point line, line_normalized;
+	line.x = p2.x - p1.x;
+	line.y = p2.y - p1.y;
+	line.z = p2.z - p1.z;
+
+	float length_dz = sqrt(pow(line.x,2) + pow(line.y,2) + pow(line.z,2));
+
+	line_normalized = line;
+	line_normalized.x /= length_dz;
+	line_normalized.y /= length_dz;
+	line_normalized.z /= length_dz;
+
+	float step_dz = sqrt(pow(line_normalized.x,2) + pow(line_normalized.y,2) + pow(line_normalized.z,2));
+	cout << "step_dz = " << step_dz << endl;
+
+	int nz2 = length_dz / step_dz; // number of slices on the z-axis
+
+	cout << "length_dz = " << length_dz <<  " nz2 = " << nz2 << endl;
+
+	//return NULL;
+	MedicalImage *output;
+	if (nx2 == -1 && ny2 ==-1)
+		output = CreateMedicalImage(image->nx, image->ny, nz2);
+	else
+		output = CreateMedicalImage(nx2, ny2, nz2);
+
+
+	for(int slice = 0; slice < nz2; ++slice) {
+
+		GrayImage* sliceImage =  getPlanarImage(p1,p2,image);
+		fillSliceWithGrayImage(output, sliceImage,slice);
+		p1.x += line_normalized.x;
+		p1.y += line_normalized.y;
+		p1.z += line_normalized.z;
+
+	}
+
+	return output;
 
 }
 
 
-/**** main() test
+void MedicalImage2GrayImages(MedicalImage *image, const char *output_dir){
 
+	for (int z = 0; z < image->nz; ++z) {
+		GrayImage *slice = CreateGrayImage(image->nx, image->ny);
 
-int main(){
-	
+		for (int y = 0; y < image->ny; ++y) {
+			for (int x = 0; x < image->nx; ++x) {
+				slice->val[y][x] = image->val[z][y][x];
+			}
+		}
+
+		WriteGrayImage(slice, (output_dir + string("slice_") + std::to_string(z) + ".ppm").c_str());
+		DestroyGrayImage(&slice);
+	}
+}
+
+/*																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							int main(){
+	int main(){
 	string output_dir("/home/peixe/");
 	string extension(".ppm");
 
@@ -304,6 +361,50 @@ int main(){
 	     for (int i = 0; i< image->nx; ++i) {
 	        image->val[k][j][i] = count++;
 	     }     
+
+
+
+	for (int z = 0; z < image->nz; ++z) {
+	  for (int y = 0; y < image->ny; ++y) { 
+	     for (int x = 0; x < image->nx; ++x) {
+	        cout << image->val[z][y][x] << " ";
+	     }
+	     cout << endl;
+	  }
+	  cout << endl;
+	}
+
+
+	GrayImage* new_slice = CreateGrayImage(image->nx, image->ny);
+	cout << "gray image" << endl;
+	for (int y = 0; y < new_slice->ny; ++y) { 
+	 for (int x = 0; x < new_slice->nx; ++x) {
+	    cout << new_slice->val[y][x] << " ";
+	 }
+	 cout << endl;
+	}
+
+
+
+	fillSliceWithGrayImage(image, new_slice,2);
+
+
+	cout << "after" << endl;
+	for (int z = 0; z < image->nz; ++z) {
+	  for (int y = 0; y < image->ny; ++y) { 
+	     for (int x = 0; x < image->nx; ++x) {
+	        cout << image->val[z][y][x] << " ";
+	     }
+	     cout << endl;
+	  }
+	  cout << endl;
+	}
+
+
+
+	return 0;	  
+
+
 
 	GeometricTransformations test;
 
@@ -321,5 +422,4 @@ int main(){
 	WriteGrayImage(planarImage,  (output_dir + string("teste_corte_planar") + extension).c_str());
 
 }
-
 */
