@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <vector>
+#include <algorithm>
 
 extern "C" {
 #include "mc920.h"
@@ -29,7 +31,7 @@ public:
 					cout << _model[y][x] << " ";
 			cout << endl;
 		}
-	}
+	};
 
 	// _model = M * _mode
 	void multiplyMatrices(double M[][4]){
@@ -110,12 +112,17 @@ public:
 	// TODO: implement scale function
 	void scale(double sx, double sy, double sz);
 
-	Point applyModelPoint(Point p) {
+	Point applyModelPoint(Point p, bool isVector=false) {
 		double p_homo[4], p_homo_out[4];
 		p_homo[0] = p.x;
 		p_homo[1] = p.y;
 		p_homo[2] = p.z;
 		p_homo[3] = 1;
+
+		if (isVector) {
+			p_homo[3] = 0;
+		}
+
 
 
 		for (int y = 0; y < 4; ++y) {
@@ -161,6 +168,285 @@ private:
 	double _model[4][4];
 
 };
+
+
+class Point3D {
+public:
+	Point3D(int x, int y, int z){
+		this->point.x = x;
+		this->point.y = y;
+		this->point.z = z;
+	};
+
+	Point getPoint() { return point;};
+
+	Point point;
+};
+
+
+
+class MyPlane {
+public:
+	MyPlane(Point3D center, Point3D normal){
+		this->center = center.getPoint();
+		this->normal = normal.getPoint();
+	};
+
+
+	void applyTransformation(GeometricTransformations T, int theta_x, int theta_y) {
+		GeometricTransformations T_normal;
+		T_normal.rotate_x(theta_x, true);
+		T_normal.rotate_y(theta_y, true);
+
+		this->center = T.applyModelPoint(this->center, true);
+		this->normal = T_normal.applyModelPoint(this->normal, true);
+
+		float norma = sqrt( pow(this->normal.x,2) + pow(this->normal.y,2) + pow(this->normal.z,2) );
+		this->normal.x /= norma;
+		this->normal.y /= norma;
+		this->normal.z /= norma;
+
+	}
+
+
+	void print_plane(){
+		cout << "center: " << center.x << " " << center.y << " " << center.z << " " <<
+		        "normal: " << normal.x << " " << normal.y << " " << normal.z << endl;
+	};
+
+	bool isVisible(Point p) {
+		Point q;
+		q.x = p.x - this->center.x;
+		q.y = p.y - this->center.y;
+		q.z = p.z - this->center.z;
+
+
+		float scalar_prod = q.x * this->normal.x +
+							q.y * this->normal.y +
+						    q.z * this->normal.z;
+		//cout << "prod scalar " << scalar_prod << endl;
+		return fabs(scalar_prod) > 0.0001;
+
+	};
+
+	Point center;
+	Point normal;
+	bool visible = false;
+};
+
+
+class Volume {
+public:
+	Volume(int width, int hight, int length){
+           /*
+     (0,0,0) _     5
+            |   ________
+               |\       \
+               | \   2   \
+               |0 \_______\
+               |  |       |
+               \  |   4   | <- 1
+                \ |       |
+                 \|_______|
+                      3
+
+                  |_width_|
+
+		*/
+
+	planes.push_back(MyPlane(Point3D(0, hight/2, length/2), Point3D (1,0,0)));
+	planes.push_back(MyPlane(Point3D(width, hight/2, length/2), Point3D (-1,0,0)));
+
+	planes.push_back(MyPlane(Point3D(width/2, hight, length/2), Point3D(0,-1,0)));
+	planes.push_back(MyPlane(Point3D(width/2, 0, length/2), Point3D(0,1,0)));
+
+	planes.push_back(MyPlane(Point3D(width/2, hight/2, length), Point3D(0,0,-1)));
+	planes.push_back(MyPlane(Point3D(width/2, hight/2, 0), Point3D(0,0,1)));
+
+	};
+
+
+	void print_volume() {
+		for (int i=0; i< planes.size(); ++i) {
+			cout << "Plane " << i << endl;
+			planes[i].print_plane();
+		}
+
+	};
+
+	void applyTransformation(GeometricTransformations T, int theta_x, int theta_y) {
+		for (int i=0; i< planes.size(); ++i) {
+			planes[i].applyTransformation(T,theta_x, theta_y);
+		}
+	};
+
+	bool isVisible(Point p) {
+		int count = 0;
+		for (int i=0; i< planes.size(); ++i) {
+			if (planes[i].isVisible(p))
+				++count;
+		}
+		return count >= 2;
+	};
+
+	std::vector<MyPlane> planes;
+
+};
+
+
+
+std::vector<int> DDA(Point p1, Point p2, MedicalImage *image) {
+	int n;
+	Point D;
+	Point d;
+
+	if (p1.x == p2.x && p1.y == p2.y && p1.z == p2.z) {
+		n =1;
+	}
+	else {
+		D.x = p2.x - p1.x;
+		D.y = p2.y - p1.y;
+		D.z = p2.z - p1.z;
+
+		if ( fabs(D.x) >= fabs(D.y) && fabs(D.x) >= fabs(D.z)) {
+			n = D.x + 1;
+			d.x = SIGN(D.x);
+			d.y = d.x * D.y / D.x;
+			d.z = d.x * D.z / D.x;
+		}
+		else {
+			if ( fabs(D.y) >= fabs(D.x) && fabs(D.y) >= fabs(D.z)) {
+				n = D.y + 1;
+				d.y = SIGN(D.y);
+				d.x = d.y * D.x / D.y;
+				d.z = d.y * D.z / D.y;
+			}
+			else {
+				n = D.z + 1;
+				d.z = SIGN(D.z);
+				d.x = d.z * D.x / D.z;
+				d.y = d.z * D.y / D.z;
+
+			}
+		}
+	}
+
+	Point p = p1;
+	std::vector<int> Ip;
+	//cout << "n safadao : " << n << endl;
+	for (int i = 0; i < fabs(n); ++i) {
+		if (p.x >= 0 && p.x < image->nx &&
+	    	p.y >= 0 && p.y < image->ny &&
+	    	p.z >= 0 && p.z < image->nz) {
+			
+			int image_val = ImageValueAtPoint(image, p);
+			//cout <<  "image val: " << image_val << endl;
+			Ip.push_back(image_val);
+		}
+		p.x += d.x;
+		p.y += d.y;
+		p.z += d.z;
+	}
+
+	return Ip;
+};
+
+
+int maxValue(std::vector<int> set) {
+	int max = -100000;
+	for(int i = 0; i < set.size(); ++i) {
+		if( set[i] > max) {
+			max = set[i];
+		}
+	}
+
+	return max;
+}
+
+GrayImage* maxIntensityProjection(MedicalImage *image, int theta_x, int theta_y){
+	GeometricTransformations T;
+	GeometricTransformations T_inv;
+	Volume volume(image->nx, image->ny, image->nz);
+
+	//GrayImage *output = CreateGrayImage(500, 500);
+
+	GrayImage *output = CreateGrayImage(image->nx, image->ny);
+	Point scene_center;
+	scene_center.x = image->nx / 2;
+	scene_center.y = image->ny / 2;
+	scene_center.z = image->nz / 2;
+
+	// Create transformation T
+	T.translate(-scene_center.x, -scene_center.y, -scene_center.z);
+	T.rotate_x(theta_x, true);
+	T.rotate_y(theta_y, true);
+	// TODO: Compute the diagonal and use it in the last translation
+	T.translate(scene_center.x, scene_center.y, scene_center.z);
+
+	// Create transformation T_inv
+	T_inv.translate(-scene_center.x, -scene_center.y, -scene_center.z);
+	T_inv.rotate_x(-theta_x, true);
+	T_inv.rotate_y(-theta_y, true);
+	// TODO: Compute the diagonal and use it in the last translation
+	T_inv.translate(scene_center.x, scene_center.y, scene_center.z);
+
+
+	//volume.applyTransformation(T, theta_x, theta_y);
+
+	for (int y = 0; y < output->ny; ++y) {
+		for (int x = 0; x < output->nx; ++x) {
+			std::vector<Point> candidates;
+			for (int z = 0; z < image->nz; ++z) {
+				Point q;
+				q.x = x;
+				q.y = y;
+				q.z = z;
+
+				Point q_line = T_inv.applyModelPoint(q);
+				if (volume.isVisible(q)) {
+					candidates.push_back(q_line);
+				}
+			}
+			
+			if (candidates.size() > 0) {
+				//cout <<  "size candidates " << candidates.size() << endl;
+				std::vector<int> Ipi = DDA(candidates[0], candidates.back(), image);
+				//cout << "size Ipi " << Ipi.size() << endl;
+				int value = int(maxValue(Ipi));
+				if (value < 0) {
+					//cout << "era negativo : " <<  std::to_string(value) << endl;
+					value = 0;
+					//return NULL;
+				}
+
+				output->val[y][x] = value;
+			}
+			else {
+				output->val[y][x] = int(0);
+			}
+		}
+	}
+
+
+	//cout << "antes da transformacao" << endl;
+	//volume.print_volume();
+
+	volume.applyTransformation(T, theta_x, theta_y);
+
+	//cout << "depois da transformacao" << endl;
+	//volume.print_volume();
+
+	//volume.applyTransformation(T_inv, -theta_x, -theta_y);
+
+	//cout << " inversa" << endl;
+	//volume.print_volume();
+
+	return output;
+
+
+}
+
+
 
 // extract a planar cut from a medical image
 GrayImage* getPlanarImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, int dy2=-1) {

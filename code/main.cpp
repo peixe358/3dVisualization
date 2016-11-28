@@ -262,9 +262,9 @@ int main(int argc, char **argv) {
    p1.y = image->ny / 2;
    p1.z = 100;
 
-   p2.x = p1.x + 200;
-   p2.y = p1.y + 200;
-   p2.z = p1.z + 200;
+   p2.x = p1.x + 5;
+   p2.y = p1.y + 5;
+   p2.z = p1.z + 5;
 
    MedicalImage* roi = reformatImage(p1, p2, image);
    WriteMedicalImage(roi, (output_dir + string("Medical_ROI_Image") + ".scn").c_str());
@@ -272,16 +272,22 @@ int main(int argc, char **argv) {
 
    /********** Create Slice Images ************************/
    roi = ReadMedicalImage("/home/peixe/output_trabalho/current/Medical_ROI_Image.scn");   
-
    MedicalImage2GrayImages(roi, output_dir.c_str());
 
 
 
+   /**** Max intensity projection  ***/
+   for(int x=0; x<360; x +=10){
+      GrayImage *maxIntensity = maxIntensityProjection(image, 0, x);
+      WriteGrayImage(maxIntensity,  (output_dir + string("maxIntensity_") + std::to_string(x) + extension).c_str());
+      DestroyGrayImage(&maxIntensity);
+   }
 /********** Destroy images ************************/
    DestroyGrayImage(&axial);
    DestroyGrayImage(&coronal);
    DestroyGrayImage(&sagital);
    DestroyGrayImage(&label_image_axial);
+   //DestroyGrayImage(&maxIntensity);
 
 
    DestroyColorImage(&color);

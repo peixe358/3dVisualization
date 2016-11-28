@@ -52,7 +52,7 @@ GrayImage* get_slice_2d(MedicalImage *I, Vector3d input,  Type type, int slice){
 
    if (input.x < 0) {  // -1
       i = v.x - 1;
-      fi = -1; // need  to process until the 0 index (condition is !=, decreasing)
+      fi = -1; // to process until the 0 index (condition is !=, decreasing)
       opi = -1;
    }
    else {
@@ -64,7 +64,7 @@ GrayImage* get_slice_2d(MedicalImage *I, Vector3d input,  Type type, int slice){
 
    if (input.y < 0) {  // -1
       j = v.y - 1;
-      fj = -1; // need  to process until the 0 index (condition is !=, decreasing)
+      fj = -1; // to process until the 0 index (condition is !=, decreasing)
       opj = -1;
    }
    else {
