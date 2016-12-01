@@ -370,7 +370,14 @@ GrayImage* maxIntensityProjection(MedicalImage *image, int theta_x, int theta_y)
 
 	//GrayImage *output = CreateGrayImage(500, 500);
 
-	GrayImage *output = CreateGrayImage(image->nx, image->ny);
+	
+	float D = sqrt(pow(image->nx,2) + pow(image->nz,2));
+	float H = sqrt(pow(image->ny,2) + pow(D,2));
+	int diagonal = static_cast<int>(H);
+	cout << "diagonal " << diagonal << endl;
+
+
+	GrayImage *output = CreateGrayImage(image->nx + diagonal, image->ny+ diagonal);
 	Point scene_center;
 	scene_center.x = image->nx / 2;
 	scene_center.y = image->ny / 2;
@@ -396,10 +403,10 @@ GrayImage* maxIntensityProjection(MedicalImage *image, int theta_x, int theta_y)
 	for (int y = 0; y < output->ny; ++y) {
 		for (int x = 0; x < output->nx; ++x) {
 			std::vector<Point> candidates;
-			for (int z = 0; z < image->nz; ++z) {
+			for (int z = - diagonal/2; z < image->nz; ++z) {
 				Point q;
-				q.x = x;
-				q.y = y;
+				q.x = x - diagonal/2;
+				q.y = y - diagonal/2;
 				q.z = z;
 
 				Point q_line = T_inv.applyModelPoint(q);

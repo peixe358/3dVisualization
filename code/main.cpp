@@ -84,18 +84,19 @@ int main(int argc, char **argv) {
    // BASE
 
    GrayImage *contrast_axial =  contrastAndBrightness(axial ,50, 50);
-   WriteGrayImage(contrast_axial,  (output_dir + string("axial_50_50") + extension).c_str());
+   cout << (output_dir + "/cortes/" + string("axial_50_50") + extension).c_str() << endl;
+   WriteGrayImage(contrast_axial,  (output_dir + "/plane/" + string("axial_50_50") + extension).c_str());
 
    GrayImage *contrast_coronal =  contrastAndBrightness(coronal ,50, 50);
-   WriteGrayImage(contrast_coronal,  (output_dir + string("coronal_50_50") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/plane/" + string("coronal_50_50") + extension).c_str());
 
    GrayImage *contrast_sagital =  contrastAndBrightness(sagital ,50, 50);
-   WriteGrayImage(contrast_sagital,  (output_dir + string("sagital_50_50") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/plane/" + string("sagital_50_50") + extension).c_str());
   
    // only a test
    int max_value = MaximumValue(contrast_axial);
    ColorImage* color = Gray2Color(contrast_axial, max_value);
-   WriteColorImage(color, (output_dir + string("contrast_axial_color") + extension).c_str());
+   WriteColorImage(color, (output_dir + "/brightness_contrast/" + string("contrast_axial_color") + extension).c_str());
 
    DestroyGrayImage(&contrast_axial);
    DestroyGrayImage(&contrast_coronal);
@@ -106,13 +107,13 @@ int main(int argc, char **argv) {
    // CONTRAST
 
    contrast_axial =  contrastAndBrightness(axial ,10, 50, H);
-   WriteGrayImage(contrast_axial,  (output_dir + string("axial_10_50") + extension).c_str());
+   WriteGrayImage(contrast_axial,  (output_dir + "/brightness_contrast/" + string("axial_10_50") + extension).c_str());
 
    contrast_coronal =  contrastAndBrightness(coronal ,10, 50, H);
-   WriteGrayImage(contrast_coronal,  (output_dir + string("coronal_10_50") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/brightness_contrast/" + string("coronal_10_50") + extension).c_str());
 
    contrast_sagital =  contrastAndBrightness(sagital ,10, 50, H);
-   WriteGrayImage(contrast_sagital,  (output_dir + string("sagital_10_50") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/brightness_contrast/" + string("sagital_10_50") + extension).c_str());
   
    DestroyGrayImage(&contrast_axial);
    DestroyGrayImage(&contrast_coronal);
@@ -122,13 +123,13 @@ int main(int argc, char **argv) {
 
 
    contrast_axial =  contrastAndBrightness(axial ,100, 50, H);
-   WriteGrayImage(contrast_axial,  (output_dir + string("axial_100_50") + extension).c_str());
+   WriteGrayImage(contrast_axial,  (output_dir + "/brightness_contrast/" + string("axial_100_50") + extension).c_str());
 
    contrast_coronal =  contrastAndBrightness(coronal ,100, 50, H);
-   WriteGrayImage(contrast_coronal,  (output_dir + string("coronal_100_50") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/brightness_contrast/" + string("coronal_100_50") + extension).c_str());
 
    contrast_sagital =  contrastAndBrightness(sagital ,100, 50, H);
-   WriteGrayImage(contrast_sagital,  (output_dir + string("sagital_100_50") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/brightness_contrast/" + string("sagital_100_50") + extension).c_str());
   
    DestroyGrayImage(&contrast_axial);
    DestroyGrayImage(&contrast_coronal);
@@ -139,13 +140,13 @@ int main(int argc, char **argv) {
    // BRIGHTNESS
 
    contrast_axial =  contrastAndBrightness(axial ,50, 10, H);
-   WriteGrayImage(contrast_axial,  (output_dir + string("axial_50_10") + extension).c_str());
+   WriteGrayImage(contrast_axial,  (output_dir + "/brightness_contrast/" + string("axial_50_10") + extension).c_str());
 
    contrast_coronal =  contrastAndBrightness(coronal ,50, 10, H);
-   WriteGrayImage(contrast_coronal,  (output_dir + string("coronal_50_10") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/brightness_contrast/" + string("coronal_50_10") + extension).c_str());
 
    contrast_sagital =  contrastAndBrightness(sagital ,50, 10, H);
-   WriteGrayImage(contrast_sagital,  (output_dir + string("sagital_50_10") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/brightness_contrast/" + string("sagital_50_10") + extension).c_str());
   
    DestroyGrayImage(&contrast_axial);
    DestroyGrayImage(&contrast_coronal);
@@ -155,21 +156,17 @@ int main(int argc, char **argv) {
 
 
    contrast_axial =  contrastAndBrightness(axial ,50, 100, H);
-   WriteGrayImage(contrast_axial,  (output_dir + string("axial_50_100") + extension).c_str());
+   WriteGrayImage(contrast_axial,  (output_dir + "/brightness_contrast/" + string("axial_50_100") + extension).c_str());
 
    contrast_coronal =  contrastAndBrightness(coronal ,50, 100, H);
-   WriteGrayImage(contrast_coronal,  (output_dir + string("coronal_50_100") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/brightness_contrast/" + string("coronal_50_100") + extension).c_str());
 
    contrast_sagital =  contrastAndBrightness(sagital ,50, 100, H);
-   WriteGrayImage(contrast_sagital,  (output_dir + string("sagital_50_100") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/brightness_contrast/" + string("sagital_50_100") + extension).c_str());
   
    DestroyGrayImage(&contrast_axial);
    DestroyGrayImage(&contrast_coronal);
    DestroyGrayImage(&contrast_sagital);
-
-
-
-
 
 
    /********** Create Color Images ************************/
@@ -182,11 +179,11 @@ int main(int argc, char **argv) {
 
    // create mask using maximum gray intensity
    ColorImage *axial_label_color =   Gray2ColorLabelImage(label_image_axial, max_value);
-   WriteColorImage(axial_label_color, (output_dir + string("axial_label_color") + extension).c_str());
+   WriteColorImage(axial_label_color, (output_dir + "/color/" + string("axial_label_color") + extension).c_str());
 
 
    ColorImage * concatenateImage_axial = ConcatenateLabelImage(axial, axial_label_color, 0);
-   WriteColorImage(concatenateImage_axial, (output_dir + string("axial_label_and_mask") + extension).c_str());
+   WriteColorImage(concatenateImage_axial, (output_dir + "/color/" + string("axial_label_and_mask") + extension).c_str());
 
 
    // CORONAL
@@ -197,11 +194,11 @@ int main(int argc, char **argv) {
 
    // create mask using maximum gray intensity
    ColorImage *coronal_label_color =   Gray2ColorLabelImage(label_image_coronal, max_value);
-   WriteColorImage(coronal_label_color, (output_dir + string("coronal_label_color") + extension).c_str());
+   WriteColorImage(coronal_label_color, (output_dir + "/color/" + string("coronal_label_color") + extension).c_str());
 
 
    ColorImage * concatenateImage_coronal = ConcatenateLabelImage(coronal, coronal_label_color, 0);
-   WriteColorImage(concatenateImage_coronal, (output_dir + string("coronal_label_and_mask") + extension).c_str());
+   WriteColorImage(concatenateImage_coronal, (output_dir + "/color/" + string("coronal_label_and_mask") + extension).c_str());
 
 
    // SAGITAL
@@ -212,14 +209,11 @@ int main(int argc, char **argv) {
 
    // create mask using maximum gray intensity
    ColorImage *sagital_label_color =   Gray2ColorLabelImage(label_image_sagital, max_value);
-   WriteColorImage(sagital_label_color, (output_dir + string("sagital_label_color") + extension).c_str());
+   WriteColorImage(sagital_label_color, (output_dir + "/color/" + string("sagital_label_color") + extension).c_str());
 
 
    ColorImage * concatenateImage_sagital = ConcatenateLabelImage(sagital, sagital_label_color, 0);
-   WriteColorImage(concatenateImage_sagital, (output_dir + string("sagital_label_and_mask") + extension).c_str());
-
-
-
+   WriteColorImage(concatenateImage_sagital, (output_dir + "/color/" + string("sagital_label_and_mask") + extension).c_str());
 
 
    // Extract planar slice from a medical image
@@ -234,7 +228,7 @@ int main(int argc, char **argv) {
    p2.z = p1.z + 1;
 
    GrayImage * planarImage = getPlanarImage(p1, p2, image);
-   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_1_1_1") + extension).c_str());
+   WriteGrayImage(planarImage,  (output_dir + "/planar_cut/" + string("Corte_Planar_1_1_1") + extension).c_str());
    DestroyGrayImage(&planarImage);
 
 
@@ -243,7 +237,7 @@ int main(int argc, char **argv) {
    p2.z = p1.z + 1;
 
    planarImage = getPlanarImage(p1, p2, image);
-   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_0_1_1") + extension).c_str());
+   WriteGrayImage(planarImage,  (output_dir + "/planar_cut/" + string("Corte_Planar_0_1_1") + extension).c_str());
    DestroyGrayImage(&planarImage);
 
 
@@ -252,7 +246,7 @@ int main(int argc, char **argv) {
    p2.z = p1.z + 1;
 
    planarImage = getPlanarImage(p1, p2, image);
-   WriteGrayImage(planarImage,  (output_dir + string("Corte_Planar_n1_1_1") + extension).c_str());
+   WriteGrayImage(planarImage,  (output_dir + "/planar_cut/" + string("Corte_Planar_n1_1_1") + extension).c_str());
    DestroyGrayImage(&planarImage);
 
 
@@ -267,19 +261,19 @@ int main(int argc, char **argv) {
    p2.z = p1.z + 5;
 
    MedicalImage* roi = reformatImage(p1, p2, image);
-   WriteMedicalImage(roi, (output_dir + string("Medical_ROI_Image") + ".scn").c_str());
+   WriteMedicalImage(roi, (output_dir + "/reformat_image/" + string("Medical_ROI_Image") + ".scn").c_str());
    DestroyMedicalImage(&roi);
 
-   /********** Create Slice Images ************************/
-   roi = ReadMedicalImage("/home/peixe/output_trabalho/current/Medical_ROI_Image.scn");   
+   /********** For test ************************/
+   roi = ReadMedicalImage("/home/peixe/output_trabalho/current/reformat_image/Medical_ROI_Image.scn");   
    MedicalImage2GrayImages(roi, output_dir.c_str());
 
 
 
    /**** Max intensity projection  ***/
-   for(int x=0; x<360; x +=10){
-      GrayImage *maxIntensity = maxIntensityProjection(image, 0, x);
-      WriteGrayImage(maxIntensity,  (output_dir + string("maxIntensity_") + std::to_string(x) + extension).c_str());
+   for(int x=0; x<=360; x +=10){
+      GrayImage *maxIntensity = maxIntensityProjection(image, 45, x);
+      WriteGrayImage(maxIntensity,  (output_dir + "/MIP/" + string("maxIntensity_") + std::to_string(x) + extension).c_str());
       DestroyGrayImage(&maxIntensity);
    }
 /********** Destroy images ************************/
