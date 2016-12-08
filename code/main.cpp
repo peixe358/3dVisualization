@@ -58,13 +58,13 @@ int main(int argc, char **argv) {
    /********** Extract Cuts ************************/
 
    axial = get_slice_2d(image, input,  AXIAL, slice);
-   WriteGrayImage(axial,  (output_dir + string("axial") + extension).c_str());
+   WriteGrayImage(axial,  (output_dir + "/plane/" + string("axial") + extension).c_str());
 
    coronal = get_slice_2d(image, input,  CORONAL, slice);
-   WriteGrayImage(coronal, (output_dir + string("coronal") + extension).c_str());
+   WriteGrayImage(coronal, (output_dir + "/plane/" + string("coronal") + extension).c_str());
 
    sagital = get_slice_2d(image, input, SAGITAL, slice);
-   WriteGrayImage(sagital, (output_dir + string("sagital") + extension).c_str());
+   WriteGrayImage(sagital, (output_dir + "/plane/" + string("sagital") + extension).c_str());
    
 
    
@@ -85,13 +85,13 @@ int main(int argc, char **argv) {
 
    GrayImage *contrast_axial =  contrastAndBrightness(axial ,50, 50);
    cout << (output_dir + "/cortes/" + string("axial_50_50") + extension).c_str() << endl;
-   WriteGrayImage(contrast_axial,  (output_dir + "/plane/" + string("axial_50_50") + extension).c_str());
+   WriteGrayImage(contrast_axial,  (output_dir + "/brightness_contrast/" + string("axial_50_50") + extension).c_str());
 
    GrayImage *contrast_coronal =  contrastAndBrightness(coronal ,50, 50);
-   WriteGrayImage(contrast_coronal,  (output_dir + "/plane/" + string("coronal_50_50") + extension).c_str());
+   WriteGrayImage(contrast_coronal,  (output_dir + "/brightness_contrast/" + string("coronal_50_50") + extension).c_str());
 
    GrayImage *contrast_sagital =  contrastAndBrightness(sagital ,50, 50);
-   WriteGrayImage(contrast_sagital,  (output_dir + "/plane/" + string("sagital_50_50") + extension).c_str());
+   WriteGrayImage(contrast_sagital,  (output_dir + "/brightness_contrast/" + string("sagital_50_50") + extension).c_str());
   
    // only a test
    int max_value = MaximumValue(contrast_axial);
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 
    p1.x = image->nx / 2;
    p1.y = image->ny / 2;
-   p1.z = 100;
+   p1.z = 80;
 
    p2.x = p1.x + 1;
    p2.y = p1.y + 1;
@@ -249,18 +249,16 @@ int main(int argc, char **argv) {
    WriteGrayImage(planarImage,  (output_dir + "/planar_cut/" + string("Corte_Planar_n1_1_1") + extension).c_str());
    DestroyGrayImage(&planarImage);
 
-
-
    // reformat image
    p1.x = image->nx / 2;
    p1.y = image->ny / 2;
-   p1.z = 100;
+   p1.z = 115;
 
-   p2.x = p1.x + 5;
-   p2.y = p1.y + 5;
-   p2.z = p1.z + 5;
+   p2.x = p1.x + 130;
+   p2.y = p1.y + 130;
+   p2.z = p1.z + 130;
 
-   MedicalImage* roi = reformatImage(p1, p2, image);
+   MedicalImage* roi = reformatImage(p1, p2, image, image->nx, image->ny, 50);
    WriteMedicalImage(roi, (output_dir + "/reformat_image/" + string("Medical_ROI_Image") + ".scn").c_str());
    DestroyMedicalImage(&roi);
 
@@ -271,8 +269,9 @@ int main(int argc, char **argv) {
 
 
    /**** Max intensity projection  ***/
+   MedicalImage *skull = ReadMedicalImage("/home/peixe/3dVisualization/libmc920/data/skull.scn");   
    for(int x=0; x<=360; x +=10){
-      GrayImage *maxIntensity = maxIntensityProjection(image, 45, x);
+      GrayImage *maxIntensity = maxIntensityProjection(skull, 45, x);
       WriteGrayImage(maxIntensity,  (output_dir + "/MIP/" + string("maxIntensity_") + std::to_string(x) + extension).c_str());
       DestroyGrayImage(&maxIntensity);
    }

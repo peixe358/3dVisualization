@@ -333,7 +333,6 @@ std::vector<int> DDA(Point p1, Point p2, MedicalImage *image) {
 
 	Point p = p1;
 	std::vector<int> Ip;
-	//cout << "n safadao : " << n << endl;
 	for (int i = 0; i < fabs(n); ++i) {
 		if (p.x >= 0 && p.x < image->nx &&
 	    	p.y >= 0 && p.y < image->ny &&
@@ -342,6 +341,7 @@ std::vector<int> DDA(Point p1, Point p2, MedicalImage *image) {
 			int image_val = ImageValueAtPoint(image, p);
 			//cout <<  "image val: " << image_val << endl;
 			Ip.push_back(image_val);
+
 		}
 		p.x += d.x;
 		p.y += d.y;
@@ -374,7 +374,7 @@ GrayImage* maxIntensityProjection(MedicalImage *image, int theta_x, int theta_y)
 	float D = sqrt(pow(image->nx,2) + pow(image->nz,2));
 	float H = sqrt(pow(image->ny,2) + pow(D,2));
 	int diagonal = static_cast<int>(H);
-	cout << "diagonal " << diagonal << endl;
+	//cout << "diagonal " << diagonal << endl;
 
 
 	GrayImage *output = CreateGrayImage(image->nx + diagonal, image->ny+ diagonal);
@@ -458,8 +458,13 @@ GrayImage* maxIntensityProjection(MedicalImage *image, int theta_x, int theta_y)
 // extract a planar cut from a medical image
 GrayImage* getPlanarImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, int dy2=-1) {
 	GrayImage* output;
+
+	float D = sqrt(pow(image->nx,2) + pow(image->nz,2));
+	float H = sqrt(pow(image->ny,2) + pow(D,2));
+	int diagonal = static_cast<int>(H);
+
 	if (dx2 == -1 && dy2 ==-1)
-		output = CreateGrayImage(int(1 * image->nx), int(1 * image->ny));
+		output = CreateGrayImage(image->nx, image->ny);
 	else
 		output = CreateGrayImage(dx2, dy2);
 
@@ -544,10 +549,6 @@ GrayImage* getPlanarImage(Point p1, Point p2, MedicalImage *image, int dx2=-1, i
 	cout << "n_aligned Normalized" << endl;
 	cout << n_aligned.x / norma_n_aligned << " " << n_aligned.y / norma_n_aligned << " " << n_aligned.z / norma_n_aligned << endl;	
 */	
-	// diagonal principal da cena
-	float D = sqrt(pow(image->nx,2) + pow(image->nz,2));
-	float H = sqrt(pow(image->ny,2) + pow(D,2));
-	//cout << "H = " << H << endl;
 
 		for (int y = 0; y < output->ny; ++y)
 			for (int x = 0; x < output->nx; ++x) {
@@ -583,41 +584,46 @@ void fillSliceWithGrayImage(MedicalImage *image, GrayImage * gray_image, int sli
 	        image->val[slice][y][x]  = gray_image->val[y][x];
 }
 
-MedicalImage* reformatImage(Point p1, Point p2, MedicalImage *image, int nx2=-1, int ny2=-1) {
+MedicalImage* reformatImage(Point p1, Point p2, MedicalImage *image, int nx2=-1, int ny2=-1, int numberOfSlices=2) {
 	Point line, line_normalized;
 	line.x = p2.x - p1.x;
 	line.y = p2.y - p1.y;
 	line.z = p2.z - p1.z;
 
-	float length_dz = sqrt(pow(line.x,2) + pow(line.y,2) + pow(line.z,2));
+	float length = sqrt(pow(line.x,2) + pow(line.y,2) + pow(line.z,2));
 
 	line_normalized = line;
-	line_normalized.x /= length_dz;
-	line_normalized.y /= length_dz;
-	line_normalized.z /= length_dz;
+	line_normalized.x /= length;
+	line_normalized.y /= length;
+	line_normalized.z /= length;
 
 	float step_dz = sqrt(pow(line_normalized.x,2) + pow(line_normalized.y,2) + pow(line_normalized.z,2));
 	cout << "step_dz = " << step_dz << endl;
 
-	int nz2 = length_dz / step_dz; // number of slices on the z-axis
-
-	cout << "length_dz = " << length_dz <<  " nz2 = " << nz2 << endl;
+	int delta = length / numberOfSlices; // number of slices on the z-axis
 
 	//return NULL;
 	MedicalImage *output;
-	if (nx2 == -1 && ny2 ==-1)
-		output = CreateMedicalImage(image->nx, image->ny, nz2);
-	else
-		output = CreateMedicalImage(nx2, ny2, nz2);
+
+	if (nx2 == -1 && ny2 ==-1) {
+		cout << endl << numberOfSlices << endl;
+		output = CreateMedicalImage(image->nx, image->ny, numberOfSlices);
+		return NULL;
+	}
+	else {
+
+		cout << endl << numberOfSlices << endl;
+		output = CreateMedicalImage(nx2, ny2, numberOfSlices);
+	}
 
 
-	for(int slice = 0; slice < nz2; ++slice) {
+	for(int slice = 0; slice < numberOfSlices; ++slice) {
 
 		GrayImage* sliceImage =  getPlanarImage(p1,p2,image);
 		fillSliceWithGrayImage(output, sliceImage,slice);
-		p1.x += line_normalized.x;
-		p1.y += line_normalized.y;
-		p1.z += line_normalized.z;
+		p1.x += line_normalized.x * delta;
+		p1.y += line_normalized.y * delta;
+		p1.z += line_normalized.z * delta;
 
 	}
 
@@ -626,8 +632,8 @@ MedicalImage* reformatImage(Point p1, Point p2, MedicalImage *image, int nx2=-1,
 }
 
 
-void MedicalImage2GrayImages(MedicalImage *image, const char *output_dir){
-
+void MedicalImage2GrayImages(MedicalImage *image, const char *output){
+	string output_dir(output);
 	for (int z = 0; z < image->nz; ++z) {
 		GrayImage *slice = CreateGrayImage(image->nx, image->ny);
 
@@ -637,7 +643,7 @@ void MedicalImage2GrayImages(MedicalImage *image, const char *output_dir){
 			}
 		}
 
-		WriteGrayImage(slice, (output_dir + string("slice_") + std::to_string(z) + ".ppm").c_str());
+		WriteGrayImage(slice, (output_dir + "/reformat_image/" + std::to_string(z) + ".ppm").c_str());
 		DestroyGrayImage(&slice);
 	}
 }
