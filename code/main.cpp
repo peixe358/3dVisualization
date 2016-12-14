@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
    /**** Max intensity projection  ***/
    MedicalImage *skull = ReadMedicalImage("/home/peixe/3dVisualization/libmc920/data/skull.scn");   
    for(int x=0; x<=360; x +=10){
-      GrayImage *maxIntensity = maxIntensityProjection(skull, 45, x);
+      GrayImage *maxIntensity = maxIntensityProjection(image, 45, x);
       WriteGrayImage(maxIntensity,  (output_dir + "/MIP/" + string("maxIntensity_") + std::to_string(x) + extension).c_str());
       DestroyGrayImage(&maxIntensity);
    }
